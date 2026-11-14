@@ -2,7 +2,8 @@ import axios from "axios";
 import "./App.css";
 import { useState, useEffect } from "react";
 import AdminDashboard from "./AdminDashboard";
-
+import AdminLogin from "./AdminLogin";
+const API_BASE_URL = "https://quiet-battles-backend-sskl.onrender.com/api";
 function App(){
   const [showSignup, setShowSignup] = useState(false);
   const [showLogin, setShowLogin]= useState(false);
@@ -30,6 +31,9 @@ function App(){
   const [allSeries, setAllSeries] = useState([]);
 
   const [showAdmin, setShowAdmin] = useState(false);
+  const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(
+  () => Boolean(localStorage.getItem("adminToken")));
+
 
   const [isLoggedIn, setIsLoggedIn] = useState(()=>Boolean(localStorage.getItem("token")));
  
@@ -38,7 +42,7 @@ function App(){
     const fetchProducts= async()=> {
       try{
         const response = await axios.get(
-          "http://localhost:5000/api/products"
+          API_BASE_URL + "/products"
         );
 
         setProducts(response.data);
@@ -61,7 +65,7 @@ function App(){
     async function loadSeriesContent() {
       try{
         const seriesResponse = await fetch(
-          "http://localhost:5000/api/content/series");
+          API_BASE_URL + "/content/series");
           if(!seriesResponse.ok){throw new Error("Unable to load series");
           }
           
@@ -80,7 +84,7 @@ function App(){
           setSeries(defaultSeries);
      
           const chaptersResponse = await fetch(
-            `http://localhost:5000/api/content/series/${defaultSeries.id}/chapters`);
+            `${API_BASE_URL}/content/series/${defaultSeries.id}/chapters`);
           
 
           if(!chaptersResponse.ok){ throw new Error("Unable to load chapters");}
@@ -105,7 +109,7 @@ function App(){
       setChapters([]);
 
       const response = await fetch(
-         `http://localhost:5000/api/content/series/${selectedSeries.id}/chapters`);
+         `${API_BASE_URL}/content/series/${selectedSeries.id}/chapters`);
          if(!response.ok){
           throw new Error("Unable to load chapters");
          }
@@ -182,7 +186,7 @@ function App(){
 
       try{
         const response = await fetch(
-          "http://localhost:5000/api/auth/signup",
+          "${API_BASE_URL}/auth/signup",
           {
             method: "POST",
             headers: {
@@ -213,7 +217,7 @@ function App(){
 
       try{
         const response = await axios.post(
-          "http://localhost:5000/api/auth/login",
+          `${API_BASE_URL}/auth/login`,
           {
             email: email,
             password: password
@@ -302,17 +306,32 @@ function App(){
     }
 
         if(showAdmin){
-          return(
+          if (!isAdminLoggedIn) {
+            return (
+              <AdminLogin
+                onLoginSuccess={() => setIsAdminLoggedIn(true)}
+                onBack={() => setShowAdmin(false)}
+              />
+            );
+          }
+         return (
             <div>
-              <button onClick={()=>
-                setShowAdmin(false)}
+              <button
+                onClick={() => {
+                  localStorage.removeItem("adminToken");
+                  setIsAdminLoggedIn(false);
+                  setShowAdmin(false);
+                }}
                 style={{
                   margin: "15px",
                   padding: "10px 18px",
                   cursor: "pointer"
                 }}
-                >Back to Website</button>
-                <AdminDashboard />
+              >
+                Logout
+              </button>
+
+              <AdminDashboard />
             </div>
           );
         }
@@ -464,7 +483,7 @@ function App(){
                       setSuccess("");
                       
                       try{
-                        const response = await fetch("http://localhost:5000/api/auth/login",{
+                        const response = await fetch(`${API_BASE_URL}/auth/login`,{
                           method:"POST",
                           headers: {
                             "Content-Type": "application/json"
