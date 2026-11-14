@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import axios from "axios";
-
+import "./AdminLogin.css";
 
 const API = "https://quiet-battles-backend-sskl.onrender.com/api";
 
