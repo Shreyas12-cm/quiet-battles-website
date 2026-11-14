@@ -150,4 +150,74 @@ router.get("/me", authMiddleware, (req, res) =>{
     });
 });
 
+// ADMIN LOGIN API
+router.post("/admin/login", (req, res) => {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+        return res.status(400).json({
+            message: "Email and password are required"
+        });
+    }
+
+    const cleanEmail = email.trim().toLowerCase();
+
+    db.query(
+        "SELECT * FROM admins WHERE LOWER(email) = ?",
+        [cleanEmail],
+        async (err, results) => {
+            if (err) {
+                return res.status(500).json({
+                    message: "Database error"
+                });
+            }
+
+            if (results.length === 0) {
+                return res.status(401).json({
+                    message: "Invalid email or password"
+                });
+            }
+
+            try {
+                const admin = results[0];
+
+                const isValid = await bcrypt.compare(
+                    password,
+                    admin.password
+                );
+
+                if (!isValid) {
+                    return res.status(401).json({
+                        message: "Invalid email or password"
+                    });
+                }
+
+                const token = jwt.sign(
+                    {
+                        id: admin.id,
+                        email: admin.email,
+                        role: "admin"
+                    },
+                    process.env.JWT_SECRET,
+                    { expiresIn: "1h" }
+                );
+
+                return res.status(200).json({
+                    message: "Admin login successful!",
+                    token,
+                    admin: {
+                        id: admin.id,
+                        name: admin.name,
+                        email: admin.email
+                    }
+                });
+            } catch (error) {
+                return res.status(500).json({
+                    message: "Admin login failed"
+                });
+            }
+        }
+    );
+});
+
 module.exports = router;

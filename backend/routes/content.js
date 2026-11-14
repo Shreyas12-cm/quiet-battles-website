@@ -2,6 +2,7 @@
 const express = require("express");
 const router = express.Router();
 const db = require("../db");
+const adminMiddleware = require("../middleware/adminMiddleware");
 
 
 
@@ -16,7 +17,7 @@ router.get("/series", (req, res) => {
 });
 
 // Add a series
-router.post("/series", (req, res) => {
+router.post("/series", adminMiddleware,(req, res) => {
   const { title, slug, description, cover_image, status } = req.body;
 
   if (!title || !slug) {
@@ -40,7 +41,7 @@ router.post("/series", (req, res) => {
 });
 
 // Update a series
-router.put("/series/:id", (req, res) => {
+router.put("/series/:id", adminMiddleware,(req, res) => {
   const { title, slug, description, cover_image, status } = req.body;
 
   const sql = `UPDATE series SET title=?, slug=?, description=?, cover_image=?, status=?
@@ -60,7 +61,7 @@ router.put("/series/:id", (req, res) => {
 });
 
 // Delete a series
-router.delete("/series/:id", (req, res) => {
+router.delete("/series/:id", adminMiddleware, (req, res) => {
   db.query("DELETE FROM series WHERE id=?", [req.params.id], (err, result) => {
     if (err) return res.status(500).json({ error: err.message });
     if (!result.affectedRows) {
@@ -102,7 +103,7 @@ router.get("/chapters/:chapterId", (req, res) => {
 });
 
 // Add a chapter
-router.post("/chapters", (req, res) => {
+router.post("/chapters", adminMiddleware, (req, res) => {
   const {
     series_id,
     chapter_number,
@@ -142,7 +143,7 @@ router.post("/chapters", (req, res) => {
 });
 
 // Update a chapter
-router.put("/chapters/:id", (req, res) => {
+router.put("/chapters/:id", adminMiddleware,(req, res) => {
   const {
     series_id,
     chapter_number,
@@ -181,7 +182,7 @@ router.put("/chapters/:id", (req, res) => {
 });
 
 // Delete a chapter
-router.delete("/chapters/:id", (req, res) => {
+router.delete("/chapters/:id", adminMiddleware, (req, res) => {
   db.query("DELETE FROM chapters WHERE id=?", [req.params.id], (err, result) => {
     if (err) return res.status(500).json({ error: err.message });
     if (!result.affectedRows) {
@@ -196,7 +197,7 @@ router.delete("/chapters/:id", (req, res) => {
 //  PRODUCT APIs 
 
 // Add a product
-router.post("/products", (req, res) => {
+router.post("/products", adminMiddleware, (req, res) => {
   const { name, description, price, image_url } = req.body;
 
   if (!name || price === undefined || Number(price) < 0) {
@@ -217,7 +218,7 @@ router.post("/products", (req, res) => {
 });
 
 // Update a product
-router.put("/products/:id", (req, res) => {
+router.put("/products/:id", adminMiddleware,(req, res) => {
   const { name, description, price, image_url } = req.body;
 
   db.query(
@@ -234,7 +235,7 @@ router.put("/products/:id", (req, res) => {
 });
 
 // Delete a product
-router.delete("/products/:id", (req, res) => {
+router.delete("/products/:id", adminMiddleware,(req, res) => {
   db.query("DELETE FROM products WHERE id=?", [req.params.id], (err, result) => {
     if (err) return res.status(500).json({ error: err.message });
     if (!result.affectedRows) {
