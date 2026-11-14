@@ -185,6 +185,7 @@ router.post("/admin/login", (req, res) => {
                     password,
                     admin.password
                 );
+                console.log("Admin password match:", isValid);
 
                 if (!isValid) {
                     return res.status(401).json({
