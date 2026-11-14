@@ -18,7 +18,7 @@ app.get("/", (req, res) => {
 });
 
 app.get("/api/products", (req, res) => {
-    db.query("SELECT * FROM PRODUCTS",(err, results) =>{
+    db.query("SELECT * FROM products",(err, results) =>{
         if(err){
             return res.status(500).json({
                 error: err.message
