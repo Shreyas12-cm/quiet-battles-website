@@ -3,7 +3,12 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import "./AdminDashboard.css";
 
-const API = "http://localhost:5000/api";
+const API = "https://quiet-battles-backend-sskl.onrender.com/api";
+const getAuthConfig = () => ({
+  headers: {
+    Authorization: `Bearer ${localStorage.getItem("adminToken")}`
+  }
+});
 
 export default function AdminDashboard() {
   const [section, setSection] = useState("series");
@@ -156,7 +161,7 @@ const handleSeriesSelect = async (e) => {
         };
       }
 
-      await axios[method](endpoint, payload);
+      await axios[method](endpoint, payload, getAuthConfig());
       setMessage("Saved successfully!");
       resetForm();
       loadData();
@@ -201,7 +206,7 @@ const handleSeriesSelect = async (e) => {
           ? `${API}/content/chapters/${id}`
           : `${API}/content/products/${id}`;
 
-      await axios.delete(endpoint);
+      await axios.delete(endpoint, getAuthConfig());
       setMessage("Deleted successfully!");
       loadData();
     } catch (error) {
